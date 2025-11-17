@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEKOboards - Кто я?</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <link rel="stylesheet" href="style-wg.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="../../supabase-init.js" defer></script>
+
+    <script src="guesswho.js" defer></script>
+</head>
+<body>
+    <div id="game-container">
+            
+        <div class="game-header">
+            <h3 id="game-room-name">Кто я?</h3>
+            <button id="leave-game-btn" class="leave-btn">
+                <i class="fas fa-sign-out-alt"></i> На главную
+            </button>
+        </div>
+        
+        <div class="game-status">
+            <p id="game-status-text">Загрузка...</p>
+        </div>
+
+        <div id="who-guess-wrapper">
+                
+            <div class="wg-secret-cards-container">
+                <div class="wg-secret-card-holder">
+                    <span class="wg-secret-card-label">Ваш персонаж</span>
+                    <div id="wg-my-secret-card" class="wg-secret-card">?</div>
+                </div>
+                <div class="wg-secret-card-holder">
+                    <span class="wg-secret-card-label">Персонаж врага</span>
+                    <div id="wg-opponent-secret-card" class="wg-secret-card">?</div>
+                </div>
+            </div>
+
+            <div id="wg-game-board">
+                </div>
+            
+            <div id="who-guess-footer" class="game-footer">
+                <div id="wg-chat-log">
+                    <p class="wg-chat-message system">Игра началась! Ожидание выбора карт...</p>
+                </div>
+                <div id="wg-action-buttons">
+                    <button id="wg-ask-btn" class="wg-action-btn hidden">
+                        <i class="fas fa-question-circle"></i> Задать вопрос
+                    </button>
+                    <button id="wg-guess-btn" class="wg-action-btn secondary hidden">
+                        <i class="fas fa-user-check"></i> Угадать
+                    </button>
+                    <button id="wg-yes-btn" class="wg-action-btn yes hidden">
+                        <i class="fas fa-check"></i> Да
+                    </button>
+                    <button id="wg-no-btn" class="wg-action-btn no hidden">
+                        <i class="fas fa-times"></i> Нет
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="image-zoom-overlay" class="modal-overlay hidden">
+        <button id="close-zoom-modal-btn" class="close-btn">&times;</button>
+        <div id="image-zoom-container">
+            <img id="zoomed-image" src="" alt="Увеличенное изображение">
+        </div>
+    </div>
+
+</body>
+</html>
