@@ -5,10 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const supabase = window.supabaseClient;
     
-    // (ИЗМЕНЕНИЕ) Эта переменная будет хранить нашу "подписку"
-    // на изменения в комнатах
     let roomSubscription = null;
     
+    // (ИЗМЕНЕНИЕ) Канал для подписки на статусы друзей
+    let friendStatusChannel = null;
+
     // ===================================================================
     // 1. ЛОГИКА САЙДБАРА И ПЕРЕКЛЮЧЕНИЯ ВКЛАДОК
     // ===================================================================
@@ -62,11 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logout-btn');
 
     const roomListElement = document.getElementById('room-list');
-    let friendsRef = null;
-    let friendStatusListeners = {}; 
 
     // (ИЗМЕНЕНИЕ) Рендер списка комнат из Supabase
-    // 'rooms' - это теперь МАССИВ объектов, а не объект
     const renderRoomList = (rooms) => {
         roomListElement.innerHTML = ''; 
 
@@ -79,16 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // (ИЗМЕНЕНИЕ) Мы итерируем массив
         rooms.forEach(room => {
-            // (ИЗМЕНЕНИЕ) 'players' - это JSONB. Нам нужно 
-            // распарсить его, если это строка, или просто
-            // получить ключи, если это уже объект.
             let playerCount = 0;
             if (room.players) {
                 try {
-                    // Firebase хранил как объект, Supabase может хранить
-                    // как объект или как строку JSON.
                     const playersObj = (typeof room.players === 'string') 
                         ? JSON.parse(room.players) 
                         : room.players;
@@ -100,7 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const roomItem = document.createElement('div');
             roomItem.classList.add('room-item');
-            // (ИЗМЕНЕНИЕ) ID комнаты теперь в room.id
             roomItem.dataset.roomId = room.id; 
 
             let gameIcon = 'fa-question-circle'; 
@@ -137,24 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const listenForRooms = async () => {
         console.log("Начинаем слушать комнаты (Supabase Realtime)...");
 
-        // 1. Получаем начальный список комнат
-        try {
-            const { data: initialRooms, error } = await supabase
-                .from('rooms')
-                .select('*')
-                .eq('status', 'waiting'); // Показываем только те, что ждут
-                
-            if (error) throw error;
-            renderRoomList(initialRooms); // Рендерим первый раз
-
-        } catch (error) {
-            console.error("Ошибка получения комнат:", error);
-            roomListElement.innerHTML = `<p>Ошибка загрузки комнат.</p>`;
-        }
-
-        // 2. Подписываемся на БУДУЩИЕ изменения
+        // Сначала загружаем текущий список
+        loadInitialWaitingRooms();
+        
         if (roomSubscription) {
-            roomSubscription.unsubscribe(); // Чистим старую подписку
+            roomSubscription.unsubscribe(); 
         }
         
         roomSubscription = supabase.channel('public:rooms')
@@ -162,15 +140,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 { event: '*', schema: 'public', table: 'rooms' }, 
                 (payload) => {
                     console.log('Realtime: комнаты изменились!', payload);
-                    // Это самый простой способ: 
-                    // просто перезагружаем ВЕСЬ список при любом изменении.
-                    listenForRooms(); 
+                    // Просто перезагружаем ВЕСЬ список
+                    loadInitialWaitingRooms();
                 }
             )
             .subscribe();
     };
+    
+    // (ИЗМЕНЕНИЕ) Вспомогательная функция для обновления списка комнат
+    const loadInitialWaitingRooms = async () => {
+         try {
+            const { data: rooms, error } = await supabase
+                .from('rooms')
+                .select('*')
+                .eq('status', 'waiting');
+            if (error) throw error;
+            renderRoomList(rooms);
+         } catch (error) {
+            console.error("Ошибка обновления списка комнат:", error);
+         }
+    };
 
-    // (ИЗМЕНЕНИЕ) Отписка от комнат
+
     const stopListeningForRooms = () => {
         console.log("Прекращаем слушать комнаты (Supabase).");
         if (roomSubscription) {
@@ -181,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    // (ИЗМЕНЕНИЕ) Обновляем UI, но теперь с Supabase
     const updateUIforUser = async (session) => {
         const user = session?.user; 
 
@@ -194,9 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
             showRegisterBtn.classList.add('hidden');
             userProfileDisplay.classList.remove('hidden');
 
-            // (ИЗМЕНЕНИЕ) Система присутствия (Presence)
-            // Это сложнее, чем в Firebase. Мы сделаем это позже.
-            // Пока просто ставим статус 'online' при входе.
             try {
                 await supabase
                     .from('profiles')
@@ -206,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Ошибка обновления статуса:", error);
             }
             
-            listenForRooms(); // <-- Теперь эта функция работает!
+            listenForRooms(); 
 
             try {
                 const { data, error } = await supabase
@@ -226,7 +213,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 userProfileName.textContent = username;
                 userProfileInitial.textContent = username.charAt(0).toUpperCase(); 
                 
-                listenForFriends(user.id); // <-- Включаем (но она пока пустая)
+                // (ИЗМЕНЕНИЕ) Теперь эта функция работает!
+                listenForFriends(user.id);
 
             } catch (error) {
                 console.error("Ошибка при получении профиля:", error);
@@ -246,6 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
             userProfileDisplay.classList.add('hidden');
 
             stopListeningForRooms();
+            // (ИЗМЕНЕНИЕ) Теперь эта функция работает!
             stopListeningForFriends();
             window.currentUser = null;
         }
@@ -264,7 +253,6 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutBtn.addEventListener('click', async () => {
         if (confirm("Вы уверены, что хотите выйти?")) {
             
-            // (ИЗМЕНЕНИЕ) Ставим 'offline' перед выходом
             if (window.currentUser) {
                 try {
                     await supabase
@@ -291,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===================================================================
     // 3. ЛОГИКА МОДАЛЬНОГО ОКНА "СОЗДАТЬ КОМНАТУ"
     // ===================================================================
-    // (Без изменений в DOM-элементах)
+    // (Без изменений)
 
     const showCreateRoomBtn = document.getElementById('show-create-room-btn');
     const createRoomModalOverlay = document.getElementById('create-room-modal-overlay');
@@ -350,7 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // (ИЗМЕНЕНИЕ) Создание комнаты (Supabase)
     createRoomForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -371,7 +358,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return; 
             }
 
-            // (ИЗМЕНЕНИЕ) Создаем объект для вставки в Supabase
             const newRoom = {
                 room_name: roomName,
                 game: selectedGame,
@@ -379,34 +365,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 creator_id: user.uid,
                 creator_name: user.username,
                 status: 'waiting',
-                // (ИЗМЕНЕНИЕ) JSONB-поля
                 players: {
                     [user.uid]: user.username
                 },
                 game_state: {
-                    // (ИЗМЕНЕНИЕ) В Supabase мы можем хранить массив
-                    // напрямую в JSONB
                     board: [ '', '', '', '', '', '', '', '', ''],
                 },
                 turn: user.uid,
-                // sub_category остается NULL
             };
 
             try {
-                // (ИЗМЕНЕНИЕ) Вставляем в таблицу и 
-                // .select() чтобы получить ID обратно
                 const { data, error } = await supabase
                     .from('rooms')
                     .insert(newRoom)
-                    .select('id') // <-- Важно: получаем ID созданной комнаты
-                    .single(); // <-- Ожидаем один результат
+                    .select('id') 
+                    .single(); 
 
                 if (error) throw error;
 
                 const newRoomId = data.id;
                 console.log("Комната TTT успешно создана:", newRoomId);
                 closeCreateRoomModal();
-                // (ИЗМЕНЕНИЕ) ID теперь число, но это не страшно
                 window.location.href = `games/tic-tac-toe/index.html?room=${newRoomId}`;
 
             } catch (error) {
@@ -422,7 +401,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const subCategory = subCategoryInput.value;
 
-            // (ИЗМЕНЕНИЕ) Создаем объект для "Кто я?"
             const newRoom = {
                 room_name: roomName,
                 game: selectedGame,
@@ -433,11 +411,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 players: {
                     [user.uid]: user.username
                 },
-                game_state: {
-                    // Пустое состояние, игра создаст его сама
-                },
+                game_state: {},
                 turn: user.uid,
-                sub_category: subCategory // <-- Указываем подкатегорию
+                sub_category: subCategory 
             };
             
             try {
@@ -467,18 +443,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===================================================================
     // 4. ЛОГИКА ВХОДА В КОМНАТУ
     // ===================================================================
+    // (Без изменений)
     
-    // (ИЗМЕНЕНИЕ) Вход в комнату (Supabase)
     roomListElement.addEventListener('click', async (e) => {
         if (e.target.classList.contains('join-btn')) {
             const roomItem = e.target.closest('.room-item');
             const roomId = roomItem.dataset.roomId;
             
             try {
-                // (ИЗМЕНЕНИЕ) Получаем данные комнаты из Supabase
                 const { data: roomData, error } = await supabase
                     .from('rooms')
-                    .select('game, sub_category') // Нам нужны только эти поля
+                    .select('game, sub_category') 
                     .eq('id', roomId)
                     .single();
 
@@ -510,36 +485,181 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ===================================================================
-    // 5. (Задача 2) ЛОГИКА ДРУЗЕЙ
+    // 5. ЛОГИКА ДРУЗЕЙ (Supabase)
     // ===================================================================
-    // (ИЗМЕНЕНИЕ) Эта логика пока НЕ РАБОТАЕТ.
-    // Мы сделаем ее в следующем шаге (нужна таблица 'friends')
-    
+    // (ИЗМЕНЕНИЕ) Весь этот раздел переписан
+
     const friendSearchForm = document.getElementById('friend-search-form');
     const friendSearchInput = document.getElementById('friend-search-input');
     const friendSearchResults = document.getElementById('friend-search-results');
     const friendList = document.getElementById('friend-list');
     
+    // (ИЗМЕНЕНИЕ) Поиск друзей (Supabase)
     friendSearchForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        alert("Поиск друзей будет доступен в следующем шаге.");
-    });
+        const searchTerm = friendSearchInput.value.trim();
+        if (searchTerm === '' || !window.currentUser) return;
+        
+        friendSearchResults.innerHTML = `<p>Поиск...</p>`;
 
-    friendSearchResults.addEventListener('click', (e) => {
-        if (e.target.classList.contains('add-friend-btn') || e.target.closest('.add-friend-btn')) {
-            alert("Добавление друзей будет доступно в следующем шаге.");
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('id, username') 
+                .like('username', `%${searchTerm}%`) 
+                .neq('id', window.currentUser.uid) 
+                .limit(10); 
+
+            if (error) throw error;
+            
+            if (!data || data.length === 0) {
+                friendSearchResults.innerHTML = `<p>Пользователь "${searchTerm}" не найден.</p>`;
+                return;
+            }
+            
+            friendSearchResults.innerHTML = ''; 
+            
+            data.forEach(user => {
+                const resultItem = document.createElement('div');
+                resultItem.classList.add('user-search-item');
+                resultItem.innerHTML = `
+                    <span>${user.username}</span>
+                    <button class="add-friend-btn" data-uid="${user.id}">
+                        <i class="fas fa-user-plus"></i> Добавить
+                    </button>
+                `;
+                friendSearchResults.appendChild(resultItem);
+            });
+            
+        } catch (error) {
+            console.error("Ошибка поиска друзей:", error);
+            friendSearchResults.innerHTML = `<p>Ошибка поиска.</p>`;
         }
     });
 
-    const listenForFriends = (userId) => {
-        friendList.innerHTML = `
-            <div class="friend-item-placeholder">
-                <p>Загрузка друзей (Supabase)...</p>
-            </div>`;
+    // (ИЗМЕНЕНИЕ) Добавление друга (Supabase)
+    friendSearchResults.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('add-friend-btn') || e.target.closest('.add-friend-btn')) {
+            const btn = e.target.closest('.add-friend-btn');
+            const friendId = btn.dataset.uid;
+            
+            if (!friendId || !window.currentUser) return;
+
+            try {
+                // (ИЗМЕНЕНИЕ) Вставляем запись в 'friendship' (единственное число)
+                const { error } = await supabase
+                    .from('friendship') // <-- Используем твое название таблицы
+                    .insert({ 
+                        user_id: window.currentUser.uid, 
+                        friend_id: friendId 
+                    });
+
+                if (error) throw error;
+                
+                alert("Друг добавлен!");
+                friendSearchResults.innerHTML = '';
+                friendSearchInput.value = '';
+                
+                // (ИЗМЕНЕНИЕ) Обновляем список друзей на экране
+                listenForFriends(window.currentUser.uid);
+
+            } catch (error) {
+                if (error.code === '23505') { // Код ошибки 'Unique constraint violation'
+                    alert("Этот пользователь уже у вас в друзьях.");
+                } else {
+                    console.error("Ошибка добавления друга:", error);
+                    alert("Ошибка: " + error.message);
+                }
+            }
+        }
+    });
+
+    // (ИЗМЕНЕНИЕ) Получение списка друзей (Supabase)
+    const listenForFriends = async (userId) => {
+        if (!userId) return;
+        
+        stopListeningForFriends();
+        
+        try {
+            // (ИЗМЕНЕНИЕ) Запрос к 'friendship' (единственное число)
+            const { data: friendsData, error } = await supabase
+                .from('friendship') // <-- Используем твое название таблицы
+                .select(`
+                    profiles (id, username, status)
+                `)
+                .eq('user_id', userId);
+
+            if (error) throw error;
+            
+            if (!friendsData || friendsData.length === 0) {
+                friendList.innerHTML = `
+                    <div class="friend-item-placeholder">
+                        <p>У вас пока нет друзей. Найдите их по логину!</p>
+                    </div>`;
+                return;
+            }
+            
+            friendList.innerHTML = ''; 
+            const friendIds = []; 
+            
+            friendsData.forEach(item => {
+                const friendData = item.profiles; 
+                if (!friendData) return;
+                
+                friendIds.push(friendData.id); 
+                
+                const friendItem = document.createElement('div');
+                friendItem.classList.add('friend-item');
+                friendItem.id = `friend-item-${friendData.id}`;
+                
+                friendItem.innerHTML = `
+                    <div class="friend-info">
+                        <span class="friend-name">${friendData.username}</span>
+                        <span class="friend-status" data-status="${friendData.status}">
+                            ${getStatusText(friendData.status)}
+                        </span>
+                    </div>
+                `;
+                friendList.appendChild(friendItem);
+            });
+            
+            // (ИЗМЕНЕНИЕ) Запускаем Realtime подписку
+            // на ИЗМЕНЕНИЯ в 'profiles'
+            friendStatusChannel = supabase
+                .channel('public:profiles:friends')
+                .on('postgres_changes', {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'profiles',
+                    // (ИЗМЕНЕНИЕ) Убедимся, что friendIds не пустой
+                    filter: `id=in.(${friendIds.length > 0 ? friendIds.join(',') : "'00000000-0000-0000-0000-000000000000'"})` 
+                }, (payload) => {
+                    console.log("Realtime: Статус друга изменился!", payload);
+                    const newFriendData = payload.new;
+                    const statusElement = document.querySelector(`#friend-item-${newFriendData.id} .friend-status`);
+                    if (statusElement) {
+                        statusElement.textContent = getStatusText(newFriendData.status);
+                        statusElement.dataset.status = newFriendData.status;
+                    }
+                })
+                .subscribe();
+
+        } catch (error) {
+            console.error("Ошибка загрузки друзей:", error);
+            friendList.innerHTML = `<p>Ошибка загрузки списка друзей.</p>`;
+        }
     };
+
+    // (ИЗМЕНЕНИЕ) Отписка от статусов друзей
     const stopListeningForFriends = () => {
+        if (friendStatusChannel) {
+            friendStatusChannel.unsubscribe();
+            friendStatusChannel = null;
+        }
         friendList.innerHTML = '';
     };
+
+    // (Без изменений)
     const getStatusText = (status) => {
         switch (status) {
             case 'online': return 'В сети';
