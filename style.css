@@ -1,0 +1,996 @@
+/* Базовый сброс и шрифты */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* (ЗАДАЧА 4) Убираем горизонтальную прокрутку */
+html {
+    overflow-x: hidden;
+}
+
+body {
+    font-family: 'Roboto', sans-serif; /* Подключенный шрифт */
+    background-color: #1f2b38; /* (Из прошлого) Темный фон */
+    color: #ecf0f1; /* (Из прошлого) Светлый текст */
+    line-height: 1.6;
+    overflow-x: hidden; /* Предотвращаем горизонтальную прокрутку */
+}
+
+/* --- ХЭДЕР --- */
+header {
+    /* (ЗАДАЧА 1) Фон темнее, текст светлый */
+    background-color: #1a2531; /* Темнее чем #1f2b38 */
+    color: #ecf0f1;
+    padding: 10px 20px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Легкая тень */
+    position: fixed; /* Фиксируем шапку */
+    top: 0;
+    left: 0;
+    z-index: 100;
+}
+
+/* (Задача 1) Новый блок для иконки и заголовка */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Пробел между иконкой и заголовком */
+}
+
+/* (Задача 1) Заголовок в хедере */
+header h1#header-title {
+    font-size: 1.5rem; /* (ЗАДАЧА 3) Уменьшен */
+    font-weight: 500;
+    color: #ecf0f1; /* (ЗАДАЧА 1) Светлый */
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* (Задача 1) Когда сайдбар открыт, прячем заголовок в хедере */
+body.sidebar-open header h1#header-title {
+    opacity: 0;
+    pointer-events: none; /* Нельзя кликнуть */
+}
+
+/* (Задача 1) Стилизуем сам .auth-nav */
+.auth-nav {
+    display: flex;
+    gap: 8px; /* Пробел между кнопками */
+}
+
+/* --- Кнопки входа/регистрации в шапке --- */
+.auth-nav button {
+    background-color: #3498db; /* Яркий синий */
+    color: white;
+    border: none;
+    padding: 6px 12px; /* (ЗАДАЧА 3) Уменьшены */
+    border-radius: 20px; /* Скругленные кнопки */
+    cursor: pointer;
+    font-size: 0.85rem; /* (ЗАДАЧА 3) Уменьшен */
+    font-weight: 500;
+    margin-left: 0; /* (Задача 1) Убираем, используем gap */
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.auth-nav button:hover {
+    background-color: #2980b9;
+    transform: scale(1.05); /* Легкий эффект при наведении */
+}
+.auth-nav button:active {
+    transform: scale(0.95);
+}
+
+/* --- (ЗАДАЧА 2) Стили профиля в хедере --- */
+#user-profile-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#user-profile-display.hidden {
+    display: none;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Текст и кнопка прижаты вправо */
+    gap: 2px;
+}
+
+#user-profile-name {
+    color: #ecf0f1;
+    font-weight: 500;
+    font-size: 0.95rem;
+    /* (ЗАДАЧА 4) Ограничиваем ширину имени */
+    max-width: 120px; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+}
+
+/* (ЗАДАЧА 1) Стили для кнопки "Выйти" */
+.auth-nav button.logout-btn {
+    background-color: transparent;
+    color: #95a5a6;
+    border: none;
+    padding: 0 2px;
+    border-radius: 0;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 400;
+    margin-left: 0;
+    transition: color 0.2s ease;
+}
+
+.auth-nav button.logout-btn:hover {
+    background-color: transparent;
+    color: #e74c3c;
+    transform: none;
+    text-decoration: underline;
+}
+
+.auth-nav button.logout-btn:active {
+    transform: none;
+}
+
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* Круг */
+    background-color: #3498db; /* Синий фон */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 500;
+    border: 2px solid #ffffff; /* Белая обводка */
+}
+
+
+/* --- КНОПКА ГАМБУРГЕР --- */
+.menu-toggle {
+    width: 30px;
+    height: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 101; /* Поверх сайдбара */
+}
+
+.menu-toggle .bar {
+    width: 100%;
+    height: 3px;
+    background-color: #ecf0f1; /* (ЗАДАЧА 1) Светлые полоски */
+    border-radius: 2px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Анимация крестика */
+.menu-toggle.active .bar:nth-child(1) {
+    transform: translateY(10.5px) rotate(45deg);
+}
+.menu-toggle.active .bar:nth-child(2) {
+    opacity: 0; /* Средняя линия пропадает */
+}
+.menu-toggle.active .bar:nth-child(3) {
+    transform: translateY(-10.5px) rotate(-45deg);
+}
+
+/* БЛОК: Заголовок в сайдбаре */
+.sidebar-header {
+    padding-top: 70px; /* 60px (высота шапки) + 10px отступ */
+    padding-bottom: 20px;
+    padding-left: 25px;
+    padding-right: 25px;
+    text-align: center;
+}
+
+/* Заголовок в сайдбаре */
+.sidebar-header h2#sidebar-title {
+    color: #ffffff;
+    font-size: 1.7rem;
+    font-weight: 500;
+    border-bottom: 1px solid #34495e; /* Разделитель */
+    padding-bottom: 15px;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out 0.1s; /* 0.1s задержка */
+}
+
+/* Когда сайдбар открыт, ПОКАЗЫВАЕМ заголовок */
+body.sidebar-open .sidebar-header h2#sidebar-title {
+    opacity: 1;
+}
+
+/* --- САЙДБАР --- */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 250px; /* Ширина сайдбара */
+    background-color: rgba(44, 62, 80, 0.95); 
+    backdrop-filter: blur(5px); 
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+    transform: translateX(-100%); /* Изначально скрыт */
+    transition: transform 0.3s ease-in-out;
+    padding-top: 0; 
+    z-index: 99; /* Ниже хедера */
+}
+
+.sidebar.active {
+    transform: translateX(0); /* Показываем сайдбар */
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    color: #ecf0f1; /* Светлый текст */
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 400;
+    transition: background-color 0.2s ease;
+    border-left: 5px solid transparent; /* Для активной вкладки */
+}
+
+.sidebar-item i {
+    margin-right: 15px;
+    font-size: 1.2rem;
+    width: 25px; /* Фиксируем ширину иконки для ровности */
+    text-align: center;
+}
+
+.sidebar-item:hover {
+    background-color: #34495e; /* Чуть светлее при наведении */
+}
+
+.sidebar-item.active {
+    background-color: #34495e;
+    color: #ffffff;
+    font-weight: 500;
+    border-left-color: #3498db; /* Синяя полоска слева */
+}
+
+/* --- ОСНОВНОЙ КОНТЕНТ --- */
+#main-content {
+    padding: 20px;
+    padding-top: 80px; /* Отступ = высота хедера + запас */
+    max-width: 900px; /* Ограничим ширину контента */
+    margin: 0 auto; /* Центрируем */
+    padding-left: 20px; 
+    padding-right: 20px;
+    transition: margin-left 0.3s ease-in-out, filter 0.3s ease-in-out; 
+}
+
+
+/* Контент НЕ сдвигается, а размывается ПОД сайдбаром */
+body.sidebar-open #main-content {
+    margin-left: 0; 
+    filter: blur(3px) brightness(0.7); 
+    pointer-events: none; 
+    user-select: none;
+}
+
+/* (Задача 2) Общие H3 для вкладок */
+#main-content h3 {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #ffffff;
+    border-bottom: 2px solid #34495e;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+
+/* --- СТИЛИ ЛОББИ --- */
+#home-container {
+    margin-top: 30px;
+}
+
+.lobby-actions {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.lobby-btn {
+    flex: 1; /* Кнопки займут равное место */
+    padding: 15px 20px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.lobby-btn i {
+    font-size: 1.2rem;
+}
+
+.lobby-btn {
+    background-color: #3498db;
+    color: white;
+}
+.lobby-btn:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+.lobby-btn.secondary {
+    background-color: #34495e;
+    color: #ecf0f1;
+}
+.lobby-btn.secondary:hover {
+    background-color: #4a627c;
+}
+
+#room-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Зазор между комнатами */
+}
+
+.room-item-placeholder {
+    background-color: #2c3e50;
+    padding: 40px;
+    border-radius: 8px;
+    text-align: center;
+    color: #95a5a6;
+    border: 2px dashed #34495e;
+}
+
+/* --- СТИЛИ ДЛЯ КАРТОЧКИ КОМНАТЫ --- */
+.room-item {
+    background-color: #2c3e50;
+    border-radius: 10px;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border-left: 5px solid #3498db;
+    transition: all 0.2s ease;
+}
+.room-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.room-item-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 0; /* (ЗАДАЧА 4) Позволяет сжиматься */
+    flex-shrink: 1; /* (ЗАДАЧА 4) Позволяет сжиматься */
+}
+
+.room-game-icon {
+    font-size: 2.2rem;
+    color: #3498db;
+    width: 40px;
+    text-align: center;
+}
+
+.room-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* (ЗАДАЧА 4) Обязательно для text-ellipsis */
+}
+
+.room-name {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #ffffff;
+    /* (ЗАДАЧА 4) Обрезаем длинное название */
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+}
+
+.room-creator {
+    font-size: 0.9rem;
+    color: #bdc3c7;
+}
+
+.room-item-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0; /* (ЗАДАЧА 4) Не сжимаем эту часть */
+}
+
+.room-players {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+    color: #ecf0f1;
+    background-color: #34495e;
+    padding: 5px 12px;
+    border-radius: 20px;
+}
+
+.join-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+.join-btn:hover {
+    background-color: #2980b9;
+    transform: scale(1.05);
+}
+
+/* --- (Задача 2) СТИЛИ ДЛЯ ВКЛАДКИ ДРУЗЬЯ --- */
+#friends-container {
+    margin-top: 30px;
+}
+
+.friend-search-form {
+    display: flex;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+.friend-search-form input {
+    flex-grow: 1;
+    padding: 12px;
+    font-size: 1rem;
+    background-color: #2c3e50;
+    border: 1px solid #34495e;
+    color: #ecf0f1;
+    border-radius: 8px;
+}
+.friend-search-form button {
+    padding: 0 15px;
+    font-size: 1.1rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#friend-search-results {
+    margin-bottom: 30px;
+}
+.user-search-item {
+    background-color: #2c3e50;
+    padding: 10px 15px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.user-search-item span {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+button.add-friend-btn {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    gap: 8px;
+    display: flex;
+    align-items: center;
+}
+
+#friend-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.friend-item-placeholder {
+    background-color: #2c3e50;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    color: #95a5a6;
+    border: 2px dashed #34495e;
+}
+.friend-item {
+    background-color: #2c3e50;
+    padding: 15px 20px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid #34495e;
+}
+.friend-info {
+    display: flex;
+    flex-direction: column;
+}
+.friend-name {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #ffffff;
+}
+.friend-status {
+    font-size: 0.9rem;
+    color: #95a5a6;
+}
+/* Статусы */
+.friend-status[data-status="online"] { color: #2ecc71; }
+.friend-status[data-status="in-game"] { color: #e67e22; }
+.friend-status[data-status="offline"] { color: #95a5a6; }
+
+
+/* --- ОБЩИЕ СТИЛИ МОДАЛЬНЫХ ОКОН (теперь только для Auth и CreateRoom) --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none; /* Нельзя кликнуть, пока скрыто */
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay:not(.hidden) {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-container {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 480px; 
+    position: relative;
+    text-align: left;
+    transform: scale(0.95); 
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay:not(.hidden) .modal-container {
+    transform: scale(1);
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 2.5rem;
+    color: #aaa;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.close-btn:hover {
+    color: #333;
+    transform: scale(1.1);
+}
+
+/* (ИЗМЕНЕНИЕ) Удаляем стили для #game-container, #image-zoom-overlay */
+#create-room-modal-container .close-btn {
+    color: #95a5a6;
+}
+#create-room-modal-container .close-btn:hover {
+    color: #ecf0f1;
+}
+
+
+.toggle-link {
+    font-size: 0.95rem;
+    color: #666;
+    text-align: center;
+    margin-top: 15px;
+}
+.toggle-link a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 500;
+}
+.toggle-link a:hover {
+    text-decoration: underline;
+}
+
+/* --- ФОРМЫ (внутри модального окна) --- */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+form h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 500;
+}
+
+form label {
+    font-size: 0.9rem;
+    color: #555;
+    font-weight: 500;
+    margin-bottom: -10px; 
+}
+
+form input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: 'Roboto', sans-serif;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    color: #333; 
+}
+
+form input:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    outline: none;
+}
+
+form input.disabled,
+form input[readonly] {
+    background-color: #ecf0f1;
+    cursor: not-allowed;
+}
+
+
+form button[type="submit"] {
+    background-color: #3498db; 
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+form button[type="submit"]:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px); 
+}
+form button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+
+/* --- СПИСОК ИГР В МОДАЛКЕ --- */
+.game-list-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 колонки */
+    gap: 10px;
+    max-height: 250px; 
+    overflow-y: auto;
+    background: #f4f6f8;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.game-item-label {
+    margin: 0;
+}
+
+.game-item-label input[type="radio"] {
+    display: none;
+}
+
+.game-item-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 10px;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+    color: #333;
+}
+
+.game-item-card i {
+    font-size: 2.5rem;
+    color: #3498db;
+    margin-bottom: 10px;
+}
+
+.game-item-card span {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+.game-item-card:hover {
+    border-color: #3498db;
+    background: #f0f8ff;
+}
+
+.game-item-label input[type="radio"]:checked + .game-item-card {
+    border-color: #2980b9;
+    background: #e0f0ff;
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+}
+
+.game-item-card.disabled {
+    background: #ecf0f1;
+    border-color: #e0e0e0;
+    cursor: not-allowed;
+    color: #95a5a6;
+}
+.game-item-card.disabled i {
+    color: #bdc3c7;
+}
+
+/* --- (ЗАДАЧА 1) СТИЛИ ДЛЯ ВЫБОРА ПРОТИВНИКА --- */
+.opponent-type-select {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    background: #f4f6f8;
+    padding: 10px;
+    border-radius: 8px;
+}
+.opponent-type-label {
+    margin: 0;
+}
+.opponent-type-label input[type="radio"] {
+    display: none;
+}
+.opponent-type-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 10px;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+    color: #333;
+}
+.opponent-type-card i {
+    font-size: 2.5rem;
+    color: #3498db;
+    margin-bottom: 10px;
+}
+.opponent-type-card span {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+}
+.opponent-type-card:hover {
+    border-color: #3498db;
+    background: #f0f8ff;
+}
+.opponent-type-label input[type="radio"]:checked + .opponent-type-card {
+    border-color: #2980b9;
+    background: #e0f0ff;
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+}
+
+
+/* --- СТИЛИ МОДАЛКИ СОЗДАНИЯ КОМНАТЫ (ТЕМНАЯ ТЕМА) --- */
+#create-room-modal-container {
+    background: rgba(44, 62, 80, 0.95); 
+    backdrop-filter: blur(5px);         
+    color: #ecf0f1;
+    border: 1px solid #34495e;
+    max-height: 85vh;                   
+    overflow-y: auto;                   
+}
+
+#create-room-modal-container form h3 {
+    color: #ffffff;
+}
+
+#create-room-modal-container form label,
+#create-room-modal-container form p {
+    color: #bdc3c7;
+}
+
+#create-room-modal-container form input {
+    background-color: #1f2b38;
+    border: 1px solid #34495e;
+    color: #ecf0f1;
+}
+#create-room-modal-container form input.disabled {
+    background-color: #2c3e50;
+    color: #7f8c8d;
+}
+
+#create-room-modal-container .game-list-container,
+#create-room-modal-container .opponent-type-select {
+    background: #1f2b38;
+}
+
+#create-room-modal-container .game-item-card,
+#create-room-modal-container .opponent-type-card {
+    background: #2c3e50;
+    border-color: #34495e;
+    color: #ecf0f1;
+}
+#create-room-modal-container .game-item-card:hover,
+#create-room-modal-container .opponent-type-card:hover {
+    border-color: #3498db;
+    background: #34495e;
+}
+#create-room-modal-container .game-item-label input[type="radio"]:checked + .game-item-card,
+#create-room-modal-container .opponent-type-label input[type="radio"]:checked + .opponent-type-card {
+    border-color: #3498db;
+    background: #3498db;
+    color: #ffffff;
+}
+
+#create-room-modal-container .game-item-label input[type="radio"]:checked + .game-item-card i,
+#create-room-modal-container .opponent-type-label input[type="radio"]:checked + .opponent-type-card i {
+    color: #ffffff;
+}
+
+#tic-tac-toe-options.hidden,
+#who-guess-options.hidden {
+    display: none;
+}
+
+#who-guess-category-select {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #1f2b38;
+    padding: 10px;
+    border-radius: 8px;
+}
+.category-item {
+    border: 1px solid #34495e;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.category-header {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    cursor: pointer;
+    padding: 12px 15px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.category-header:hover,
+.category-header.active {
+    background-color: #34495e;
+}
+.category-header span {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.category-header .category-chevron {
+    transition: transform 0.3s ease;
+}
+.category-header.active .category-chevron {
+    transform: rotate(180deg);
+}
+.category-panel {
+    padding: 0 15px;
+    background-color: #2c3e50;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+.subcategory-label {
+    display: block;
+    padding: 10px 5px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 8px 0;
+    transition: background-color 0.2s ease;
+}
+.subcategory-label:hover {
+    background-color: #34495e;
+}
+.subcategory-label input[type="radio"] {
+    display: none;
+}
+.subcategory-label span {
+    color: #bdc3c7;
+    font-size: 0.95rem;
+    margin-left: 10px;
+}
+.subcategory-label input[type="radio"]:checked + span {
+    color: #3498db;
+    font-weight: 500;
+}
+
+
+#create-room-modal-container .game-item-card.disabled {
+    background: #2c3e50;
+    border-color: #34495e;
+    color: #7f8c8d;
+}
+#create-room-modal-container .game-item-card.disabled i {
+    color: #7f8c8d;
+}
+
+
+/* --- (ИЗМЕНЕНИЕ) ВСЕ СТИЛИ ИГРОВЫХ ОКОН УДАЛЕНЫ --- */
+
+
+/* --- Вспомогательные классы --- */
+.hidden {
+    display: none;
+}
+
+.modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.text-center {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #adb5bd; 
+}
+
+/* --- Адаптация --- */
+@media (max-width: 768px) {
+    /* (ИЗМЕНЕНИЕ) Удаляем #game-container */
+    
+    .room-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    .room-item-right {
+        justify-content: space-between;
+    }
+    .room-name {
+        font-size: 1.1rem;
+    }
+
+    /* (ИЗМЕНЕНИЕ) Удаляем .game-cell */
+}

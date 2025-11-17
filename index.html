@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEKOboards</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="supabase-init.js" defer></script>
+    <script src="auth.js" defer></script>
+    <script src="main.js" defer></script> 
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <button id="menu-toggle" class="menu-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+            <h1 id="header-title">NEKOboards</h1>
+        </div>
+        
+        <nav class="auth-nav">
+            <button id="show-login-btn">Вход</button>
+            <button id="show-register-btn">Регистрация</button>
+
+            <div id="user-profile-display" class="hidden">
+                <div class="user-info">
+                    <span id="user-profile-name">Username</span>
+                    <button id="logout-btn" class="logout-btn">Выйти</button>
+                </div>
+                <div id="user-profile-avatar" class="user-avatar">
+                    <span id="user-profile-initial">U</span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <aside id="sidebar" class="sidebar">
+        
+        <div class="sidebar-header">
+            <h2 id="sidebar-title">NEKOboards</h2>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="#" id="home-nav-link" class="sidebar-item active">
+                <i class="fas fa-home"></i> <span>Главная</span>
+            </a>
+            <a href="#" id="friends-nav-link" class="sidebar-item">
+                <i class="fas fa-users"></i> <span>Друзья</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main id="main-content">
+         <p id="welcome-message" class="text-center">Добро пожаловать! Войдите или зарегистрируйтесь.</p>
+
+         <div id="home-container"> 
+            
+            <div class="lobby-actions">
+                <button id="show-create-room-btn" class="lobby-btn">
+                    <i class="fas fa-plus-circle"></i> Создать комнату
+                </button>
+                <button id="play-bot-btn" class="lobby-btn secondary hidden">
+                    <i class="fas fa-robot"></i> Играть с NekoBot
+                </button>
+            </div>
+            
+            <h3>Открытые комнаты</h3>
+            <div id="room-list">
+                <div class="room-item-placeholder">
+                    <p>Пока нет открытых комнат. Создайте первую!</p>
+                </div>
+            </div>
+         </div>
+
+         <div id="friends-container" class="hidden">
+            <h3>Поиск друзей</h3>
+            <form id="friend-search-form" class="friend-search-form">
+                <input type="text" id="friend-search-input" placeholder="Введите логин (Username)" required>
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </form>
+            <div id="friend-search-results">
+                </div>
+
+            <h3>Ваши друзья</h3>
+            <div id="friend-list">
+                <div class="friend-item-placeholder">
+                    <p>У вас пока нет друзей. Найдите их по логину!</p>
+                </div>
+            </div>
+         </div>
+
+    </main>
+
+    <div id="auth-modal-overlay" class="modal-overlay hidden">
+        
+        <div id="auth-modal-container" class="modal-container">
+            <button id="close-modal-btn" class="close-btn">&times;</button>
+            
+            <form id="login-form">
+                <h3>Вход</h3>
+                <input type="email" id="login-email" placeholder="Email" required>
+                <input type="password" id="login-password" placeholder="Пароль" required>
+                <button type="submit">Войти</button>
+                <p class="toggle-link">
+                    Нет аккаунта? <a href="#" id="show-register-link">Регистрация</a>
+                </p>
+            </form>
+
+            <form id="register-form" class="hidden">
+                <h3>Регистрация</h3>
+                <input type="text" id="register-username" placeholder="Логин (Username)" required>
+                <input type="email" id="register-email" placeholder="Email (для входа)" required>
+                <input type="password" id="register-password" placeholder="Пароль (мин. 6 симв.)" required>
+                <button type="submit">Создать аккаунт</button>
+                <p class="toggle-link">
+                    Уже есть аккаунт? <a href="#" id="show-login-link">Вход</a>
+                </p>
+            </form>
+        </div>
+    </div> 
+
+    <div id="create-room-modal-overlay" class="modal-overlay hidden">
+        <div id="create-room-modal-container" class="modal-container">
+            <button id="close-create-room-modal-btn" class="close-btn">&times;</button>
+            
+            <form id="create-room-form">
+                <h3>Создание комнаты</h3>
+                
+                <label for="room-name">Название комнаты:</label>
+                <input type="text" id="room-name" placeholder="Настолки с друзьями" required>
+
+                <p>Выберите игру:</p>
+                <div class="game-list-container"> 
+                    <label class="game-item-label">
+                        <input type="radio" name="game-select" value="tic-tac-toe" checked>
+                        <div class="game-item-card">
+                            <i class="fas fa-border-all"></i>
+                            <span>Крестики-нолики</span>
+                        </div>
+                    </label>
+                    
+                    <label class="game-item-label">
+                        <input type="radio" name="game-select" value="who-guess">
+                        <div class="game-item-card">
+                            <i class="fas fa-question-circle"></i>
+                            <span>Кто я? (Guess Who)</span>
+                        </div>
+                    </label>
+                    
+                    <label class="game-item-label">
+                        <input type="radio" name="game-select" value="checkers" disabled>
+                        <div class="game-item-card disabled">
+                            <i class="fas fa-chess-board"></i>
+                            <span>Шашки (Скоро)</span>
+                        </div>
+                    </label>
+                    <label class="game-item-label">
+                        <input type="radio" name="game-select" value="chess" disabled>
+                        <div class="game-item-card disabled">
+                            <i class="fas fa-chess-king"></i>
+                            <span>Шахматы (Скоро)</span>
+                        </div>
+                    </label>
+                    <label class="game-item-label">
+                        <input type="radio" name="game-select" value="sea-battle" disabled>
+                        <div class="game-item-card disabled">
+                            <i class="fas fa-water"></i>
+                            <span>Морской бой (Скоро)</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div id="tic-tac-toe-options">
+                    <p>Тип противника (для Крестиков-ноликов):</p>
+                    <div class="opponent-type-select" id="opponent-type-container">
+                        <label class="opponent-type-label">
+                            <input type="radio" name="opponent-type" value="human" checked>
+                            <div class="opponent-type-card">
+                                <i class="fas fa-users"></i>
+                                <span>Игрок (Онлайн)</span>
+                            </div>
+                        </label>
+                        <label class="opponent-type-label">
+                            <input type="radio" name="opponent-type" value="bot">
+                            <div class="opponent-type-card">
+                                <i class="fas fa-robot"></i>
+                                <span>NekoBot (Локально)</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <label for="player-count">Количество игроков (для Крестиков-ноликов):</label>
+                    <input type="number" id="player-count" value="2" min="2" max="2" readonly class="disabled">
+                </div>
+                
+                <div id="who-guess-options" class="hidden">
+                    <p>Выберите категорию:</p>
+                    <div id="who-guess-category-select">
+                        
+                        <div class="category-item">
+                            <button type="button" class="category-header">
+                                <span><i class="fas fa-user-ninja"></i> Аниме</span>
+                                <i class="fas fa-chevron-down category-chevron"></i>
+                            </button>
+                            <div class="category-panel">
+                                <label class="subcategory-label">
+                                    <input type="radio" name="who-guess-subcategory" value="anime-naruto" checked>
+                                    <span>Naruto</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="category-item">
+                            <button type="button" class="category-header">
+                                <span><i class="fas fa-gamepad"></i> Игры</span>
+                                <i class="fas fa-chevron-down category-chevron"></i>
+                            </button>
+                            <div class="category-panel">
+                                <label class="subcategory-label">
+                                    <input type="radio" name="who-guess-subcategory" value="games-minecraft">
+                                    <span>Minecraft</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="category-item">
+                            <button type="button" class="category-header">
+                                <span><i class="fas fa-film"></i> Мультфильмы</span>
+                                <i class="fas fa-chevron-down category-chevron"></i>
+                            </button>
+                            <div class="category-panel">
+                                <label class="subcategory-label">
+                                    <input type="radio" name="who-guess-subcategory" value="cartoons-lion-king">
+                                    <span>Король лев</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="category-item">
+                            <button type="button" class="category-header">
+                                <span><i class="fas fa-video"></i> Фильмы</span>
+                                <i class="fas fa-chevron-down category-chevron"></i>
+                            </button>
+                            <div class="category-panel">
+                                <label class="subcategory-label">
+                                    <input type="radio" name="who-guess-subcategory" value="films-kitchen">
+                                    <span>Кухня</span>
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <label for="who-guess-player-count">Количество игроков (для Кто я?):</label>
+                    <input type="number" id="who-guess-player-count" value="2" min="2" max="2" readonly class="disabled">
+                </div>
+
+
+                <button type="submit">Создать и войти</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
