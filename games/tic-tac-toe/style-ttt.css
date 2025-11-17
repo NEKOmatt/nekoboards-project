@@ -1,0 +1,216 @@
+/* =================================================================== */
+/* СТИЛИ ДЛЯ СТРАНИЦЫ "КРЕСТИКИ-НОЛИКИ" (style-ttt.css)
+/* =================================================================== */
+
+/* --- Базовый сброс и фон --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    overflow-x: hidden;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #1f2b38; 
+    color: #ecf0f1;
+    line-height: 1.6;
+    padding-top: 40px; /* Отступ сверху */
+}
+
+/* --- Контейнер Игры (бывшее модальное окно) --- */
+#game-container {
+    max-width: 700px; 
+    width: 90%;
+    margin: 0 auto; /* Центрируем */
+    background: #2c3e50; 
+    color: #ecf0f1; 
+    border: 1px solid #34495e;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+}
+
+/* --- Общие стили игры (из style.css) --- */
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #34495e; 
+    padding-bottom: 15px;
+}
+
+.game-header h3 {
+    margin-bottom: 0;
+    text-align: left;
+    color: #ffffff; 
+}
+
+.leave-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.leave-btn:hover {
+    background-color: #c0392b;
+}
+
+.game-status {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #ecf0f1; 
+}
+
+/* --- Стили Крестиков-ноликов (из style.css) --- */
+.game-board-wrapper {
+    position: relative;
+    width: 90%; 
+    max-width: 300px;
+    aspect-ratio: 1 / 1; 
+    margin: 20px auto; 
+}
+
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    width: 100%; 
+    height: 100%; 
+    border: 2px solid #1a2531; 
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.game-cell {
+    width: 100%;
+    height: 100%;
+    border: 2px solid #34495e; 
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    font-weight: bold;
+    color: #ecf0f1; 
+    transition: background-color 0.2s ease;
+    background-color: #2c3e50; 
+    line-height: 1; 
+    white-space: nowrap; 
+    overflow: hidden; 
+}
+.game-cell:hover:not(:empty) {
+     cursor: not-allowed;
+}
+
+.game-cell:empty:hover {
+    background-color: #34495e; 
+}
+
+.game-cell.x {
+    color: #3498db; 
+}
+.game-cell.o {
+    color: #e67e22; 
+}
+
+.game-cell.disabled {
+    cursor: not-allowed;
+}
+.game-cell.disabled:empty:hover {
+    background-color: #2c3e50; 
+}
+
+
+.game-footer {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #bdc3c7; 
+}
+
+/* --- СТИЛИ ВЫИГРЫШНОЙ ЛИНИИ (TTT) --- */
+.winner-line {
+    position: absolute;
+    height: 8px; 
+    background-color: #fff;
+    border-radius: 4px;
+    opacity: 0.8;
+    transform: scaleX(0); 
+    transition: transform 0.4s ease-out;
+    transform-origin: left center; 
+}
+
+.winner-line.win-x { background-color: #3498db; }
+.winner-line.win-o { background-color: #e67e22; }
+
+.winner-line.win-row-1 { top: 16.66%; left: 5%; width: 90%; }
+.winner-line.win-row-2 { top: 50%; left: 5%; width: 90%; transform: translateY(-50%) scaleX(0); }
+.winner-line.win-row-3 { top: 83.33%; left: 5%; width: 90%; }
+
+.winner-line.win-col-1 { 
+    left: 16.66%; top: 5%; width: 8px; height: 90%; 
+    transform: scaleY(0); 
+    transform-origin: top center; 
+}
+.winner-line.win-col-2 { 
+    left: 50%; top: 5%; width: 8px; height: 90%; 
+    transform: translateX(-50%) scaleY(0); 
+    transform-origin: top center;
+}
+.winner-line.win-col-3 { 
+    left: 83.33%; top: 5%; width: 8px; height: 90%; 
+    transform: scaleY(0); 
+    transform-origin: top center;
+}
+.winner-line.win-diag-1 {
+    top: 0;
+    left: 0;
+    width: 141.4%; 
+    transform: rotate(45deg) translateY(-50%) scaleX(0);
+    transform-origin: top left; 
+}
+.winner-line.win-diag-2 {
+    top: 0;
+    right: 0; 
+    width: 141.4%;
+    transform: rotate(-45deg) translateY(-50%) scaleX(0);
+    transform-origin: top right; 
+}
+
+.winner-line.win-row-1:not(.hidden),
+.winner-line.win-row-3:not(.hidden) {
+    transform: scaleX(1);
+}
+.winner-line.win-row-2:not(.hidden) {
+    transform: translateY(-50%) scaleX(1);
+}
+.winner-line.win-col-1:not(.hidden) { 
+    transform: scaleY(1); 
+}
+.winner-line.win-col-2:not(.hidden) { 
+    transform: translateX(-50%) scaleY(1); 
+}
+.winner-line.win-col-3:not(.hidden) { 
+    transform: scaleY(1); 
+}
+.winner-line.win-diag-1:not(.hidden) {
+    transform: rotate(45deg) translateY(-50%) scaleX(1);
+}
+.winner-line.win-diag-2:not(.hidden) {
+    transform: rotate(-45deg) translateY(-50%) scaleX(1);
+}
